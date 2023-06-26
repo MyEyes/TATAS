@@ -3,9 +3,12 @@ import os
 from ..worker import Worker
 from .headless_gearboy_workfile import HeadlessGearboyWorkfile
 class HeadlessGearboyWorker(Worker):
-    def __init__(self, rom, headless_gearboy="../Gearboy/platforms/headless/gearboy-headless", headless_gearboy_worker="../Gearboy/platforms/headless/runner/worker_runner/worker_runner.so"):
+    def __init__(self, rom, headless_gearboy="../Gearboy/platforms/headless/gearboy-headless", headless_gearboy_worker="../Gearboy/platforms/headless/runner/worker_runner/worker_runner.so", silent=True):
         headless_gearboy_dir = os.path.dirname(headless_gearboy)
-        self.proc = subprocess.Popen([headless_gearboy, rom, headless_gearboy_worker], env={'LD_LIBRARY_PATH': headless_gearboy_dir})
+        if silent:
+            self.proc = subprocess.Popen([headless_gearboy, rom, headless_gearboy_worker], stdout=subprocess.DEVNULL, env={'LD_LIBRARY_PATH': headless_gearboy_dir})
+        else:
+            self.proc = subprocess.Popen([headless_gearboy, rom, headless_gearboy_worker], env={'LD_LIBRARY_PATH': headless_gearboy_dir})
         
         self.in_pipe_path = f"/tmp/gb_worker_{self.proc.pid}_in"
         while not os.path.exists(self.in_pipe_path):

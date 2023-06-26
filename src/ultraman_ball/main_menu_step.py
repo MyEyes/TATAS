@@ -24,7 +24,7 @@ class UB_MainMenuStep(TasGenerationStep):
             if s == 1:
                 menu_starts = i
                 break
-        print(f"State becomes 1 at frame {menu_starts}")
+        self.logger.info(f"State becomes 1 at frame {menu_starts}")
         return menu_starts
 
     def create_menu_start_state(self, genRun, menu_starts):
@@ -37,7 +37,7 @@ class UB_MainMenuStep(TasGenerationStep):
         wf = worker.create_workfile(wi, genRun.getStepFilePath(self, "create_menu_state"))
         result = worker.process_workfile_sync(wf)
 
-        print("Created menu start state")
+        self.logger.info("Created menu start state")
         return wi.output_savestate, wi.inputs
 
     def find_first_start_press(self, genRun, start_state):
