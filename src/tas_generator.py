@@ -1,4 +1,5 @@
 from .tas_generation_run import TasGenerationRun
+from .tas import Tas
 import logging
 class TasGenerator:
     def __init__(self, workers, steps):
@@ -20,5 +21,5 @@ class TasGenerator:
             sections.append(newSection)
             lastStep = s
             lastSection = newSection
-        return sections
+        return Tas(sections)
 

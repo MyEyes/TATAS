@@ -53,18 +53,20 @@ class UB_MainMenuStep(TasGenerationStep):
             wf = worker.create_workfile(wi, genRun.getStepRndPath(self))
             result = worker.process_workfile_sync(wf)
 
-            menu_starts = 0
-            for i, s in enumerate(result.data[ULTRAMAN_CONSTS.ADDR_GAME_STATE]):
+            for f, s in enumerate(result.data[ULTRAMAN_CONSTS.ADDR_GAME_STATE]):
                 if s == 2:
                     first_start = i
+                    end_frame = f
                     break
             if first_start >= 0:
                 break
-        
+
+        self.logger.info(f"Pressing start at frame {first_start}, entering main menu at frame {end_frame}")
         wi = WorkItem(start_state)
         wi.output_file = genRun.getStepRndPath(self)
         wi.output_savestate = genRun.getStepFilePath(self, "mm_end")
-        wi.inputs = no_input*i + start_press + no_input
+        wi.inputs = bytearray(no_input*end_frame)
+        wi.inputs[first_start] = INPUT.Start_Key
         wi.outdata = []
         wf = worker.create_workfile(wi, genRun.getStepRndPath(self))
         result = worker.process_workfile_sync(wf)
