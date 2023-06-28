@@ -6,18 +6,18 @@ import os
 class BK2Exporter(TasExporter):
     def __init__(self):
         self.tmpdir = "/tmp/bk2_export/"
-        self.padding = 489
+        self.padding = 0
 
     def addHeader(self, zip, tas):
         self.headerPath = os.path.join(self.tmpdir, "Header.txt")
         with open(self.headerPath, "w") as f:
             f.write(f"MovieVersion BizHawk v2.0\n")
             f.write(f"Author {tas.info.author}\n")
-            f.write(f"emuVersion 2.7.0\n")
+            f.write(f"emuVersion Version 2.7.0\n")
             f.write(f"OriginalEmuVersion Version 2.7.0\n")
             f.write(f"Platform {tas.info.platform}\n")
             f.write(f"GameName {tas.info.gamename}\n")
-            f.write(f"SHA1 {tas.info.SHA1}\n")
+            f.write(f"SHA1 3CDFCFB1A88D0CBFEB1C7B12751409FAF69BBA02\n")
             f.write(f"BoardName MBC1 ROM\n")
             f.write(f"Core {tas.info.Core}\n")
             f.write(f"rerecordCount {tas.info.rerecordCount}\n")
@@ -69,7 +69,7 @@ class BK2Exporter(TasExporter):
         zip.write(self.inputPath, "Input Log.txt")
 
     def addSyncSettings(self, zip, tas):
-        self.syncSettingsPath = os.path.join(os.path.dirname(__file__),"gambatte_sync.txt")
+        self.syncSettingsPath = os.path.join(os.path.dirname(__file__),"gambatte_sync.json")
         zip.write(self.syncSettingsPath, "SyncSettings.json")
 
     def export(self, path, tas):

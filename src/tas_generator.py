@@ -8,7 +8,6 @@ class TasGenerator:
         self.logger = logging.getLogger('TATAS.Generator')
 
     def generate(self, proj_path):
-        sections = []
         self.logger.info("Starting to generate")
         run = TasGenerationRun(proj_path, self.workers)
         lastStep = None
@@ -16,10 +15,15 @@ class TasGenerator:
         for s in self.steps:
             s.logStart()
             newSection = s.generate(run, lastStep, lastSection)
+            if newSection is None:
+                s.logEnd()
+                self.logger.critical(f"Generation of section failed, aborting")
+                return None
             s.logEnd()
+            run.clearTmpFiles()
             self.logger.info(f"Generated section: {newSection}")
-            sections.append(newSection)
+            run.addSection(newSection)
             lastStep = s
             lastSection = newSection
-        return Tas(sections)
+        return Tas(run.sections)
 

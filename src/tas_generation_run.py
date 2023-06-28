@@ -10,7 +10,10 @@ class TasGenerationRun:
         self.projPath = projPath
         self.workers = workers
         self.existing = []
+        self.tmpFiles = []
         self.logger = logging.getLogger('TATAS.Run')
+        self.totalFrames = 0
+        self.sections = []
 
     def getRndName(self, length=8):
         return ''.join(random.choices(string.ascii_letters,k=length))
@@ -32,7 +35,7 @@ class TasGenerationRun:
         self.existing.append(path)
         return path
 
-    def getStepRndPath(self, step):
+    def getStepRndPath(self, step, tmp=False):
         self.ensureStepDir(step)
         name = self.getRndName()
         path = os.path.join(self.projPath,step.short_name,name)
@@ -40,4 +43,21 @@ class TasGenerationRun:
             name = self.getRndName()
             path = os.path.join(self.projPath,step.short_name,name)
         self.existing.append(path)
+        if tmp:
+            self.tmpFiles.append(path)
         return path
+
+    def clearTmpFiles(self):
+        self.logger.info(f"Clearing {len(self.tmpFiles)} tmp files")
+        for p in self.tmpFiles:
+            os.unlink(p)
+            self.existing.remove(p)
+        self.tmpFiles.clear()
+
+
+    def getAbsoluteFrameNumber(self, inNextSectionFrame):
+        return self.totalFrames + inNextSectionFrame
+
+    def addSection(self, section):
+        self.sections.append(section)
+        self.totalFrames += len(section.inputs)

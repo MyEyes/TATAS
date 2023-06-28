@@ -1,5 +1,5 @@
 from .inputWriter import InputWriter
-from ..headless_gearboy.gearboy_input_consts import INPUT
+from ..headless_gambatte import INPUT
 class GambatteInputWriter(InputWriter):
     def __init__(self):
         pass

@@ -18,16 +18,16 @@ class UB_SkipLevelPreviewStep(TasGenerationStep):
         for b in range(100):
             for a in range(b):
                 wi = WorkItem(start_state)
-                wi.output_file = genRun.getStepRndPath(self)
+                wi.output_file = genRun.getStepRndPath(self, tmp=True)
                 wi.inputs = bytearray(no_input*(b+70))
                 wi.inputs[a] = INPUT.A_Key
                 wi.inputs[b] = INPUT.B_Key
                 wi.outdata = [ULTRAMAN_CONSTS.ADDR_GAME_STATE]
-                wf = worker.create_workfile(wi, genRun.getStepRndPath(self))
+                wf = worker.create_workfile(wi, genRun.getStepRndPath(self, tmp=True))
                 result = worker.process_workfile_sync(wf)
 
                 for f, s in enumerate(result.data[ULTRAMAN_CONSTS.ADDR_GAME_STATE]):
-                    if s == 4: #State of playing level
+                    if s == 4: #State of loading level
                         first_a = a
                         first_b = b
                         end_frame = f
@@ -36,13 +36,13 @@ class UB_SkipLevelPreviewStep(TasGenerationStep):
                     break
         self.logger.info(f"Pressing a at frame {first_a}, pressing b at frame {first_b}, entering level at frame {end_frame}")
         wi = WorkItem(start_state)
-        wi.output_file = genRun.getStepRndPath(self)
+        wi.output_file = genRun.getStepRndPath(self, tmp=True)
         wi.output_savestate = genRun.getStepFilePath(self, "slp_end")
         wi.inputs = bytearray(no_input*end_frame)
         wi.inputs[first_a] = INPUT.A_Key
         wi.inputs[first_b] = INPUT.B_Key
         wi.outdata = []
-        wf = worker.create_workfile(wi, genRun.getStepRndPath(self))
+        wf = worker.create_workfile(wi, genRun.getStepRndPath(self, tmp=True))
         result = worker.process_workfile_sync(wf)
         return wi.output_savestate, wi.inputs
 

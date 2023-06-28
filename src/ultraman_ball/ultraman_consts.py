@@ -1,4 +1,4 @@
-from ..headless_gearboy.gearboy_input_consts import INPUT
+from ..headless_gambatte import INPUT
 class ULTRAMAN_CONSTS:
     ADDR_FORM = 0xC201
     ADDR_POSX = 0xC205
@@ -13,3 +13,6 @@ class ULTRAMAN_CONSTS:
     ADDR_PLAYER_HEARTS = 0xC10D
     ADDR_GAME_STATE = 0xC101
     ADDR_BLOCK_INPUT = 0xC115
+    LEVEL_WAYPOINTS = {
+        '1-1': [(12279, 3658)]
+    }

@@ -15,10 +15,10 @@ class UB_EnterFirstLevelStep(TasGenerationStep):
         start_press = INPUT.asBytes(INPUT.Start_Key)
         for i in range(100):
             wi = WorkItem(start_state)
-            wi.output_file = genRun.getStepRndPath(self)
+            wi.output_file = genRun.getStepRndPath(self, tmp=True)
             wi.inputs = no_input*i + start_press + no_input*10
             wi.outdata = [ULTRAMAN_CONSTS.ADDR_GAME_STATE]
-            wf = worker.create_workfile(wi, genRun.getStepRndPath(self))
+            wf = worker.create_workfile(wi, genRun.getStepRndPath(self, tmp=True))
             result = worker.process_workfile_sync(wf)
 
             for f, s in enumerate(result.data[ULTRAMAN_CONSTS.ADDR_GAME_STATE]):
@@ -30,12 +30,12 @@ class UB_EnterFirstLevelStep(TasGenerationStep):
                 break
         self.logger.info(f"Pressing start at frame {first_start}, entering level preview at frame {end_frame}")
         wi = WorkItem(start_state)
-        wi.output_file = genRun.getStepRndPath(self)
+        wi.output_file = genRun.getStepRndPath(self, tmp=True)
         wi.output_savestate = genRun.getStepFilePath(self, "efl_end")
         wi.inputs = bytearray(no_input*end_frame)
         wi.inputs[first_start] = INPUT.Start_Key
         wi.outdata = []
-        wf = worker.create_workfile(wi, genRun.getStepRndPath(self))
+        wf = worker.create_workfile(wi, genRun.getStepRndPath(self, tmp=True))
         result = worker.process_workfile_sync(wf)
         return wi.output_savestate, wi.inputs
 

@@ -1,4 +1,4 @@
-from src.headless_gearboy import HeadlessGearboyWorker
+from src.headless_gambatte import GambatteWorker
 from src.tas_generator import TasGenerator
 from src.tas import TasInfo, Tas
 from src.ultraman_ball import ultraman_generation_steps
@@ -22,13 +22,16 @@ if __name__ == "__main__":
         print("Usage: tatas.py rom")
         exit(-1)
     global_logger.info("Started with ROM " + sys.argv[1])
-    worker = HeadlessGearboyWorker(sys.argv[1],silent=True)
+    worker = GambatteWorker(sys.argv[1], silent=True)
     try:
         generator = TasGenerator([worker], ultraman_generation_steps)
         tas = generator.generate("/tmp/ultraman/")
+        if not tas:
+            exit(-1)
         sha1 = sha1sum(sys.argv[1])
         tasInfo = TasInfo(name="Ultraman Ball TAS",gamename="Ultraman Ball",SHA1=sha1)
         tas.setInfo(tasInfo)
+        tas.logInfo()
         exporter = BK2Exporter()
         exporter.export("movie.bk2", tas)
     finally:
