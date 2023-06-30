@@ -1,14 +1,14 @@
 import os
 import random
 import string
-from .worker import Worker
+from .workQueue import WorkQueue
 import logging
 
 class TasGenerationRun:
-    workers = list[Worker]
-    def __init__(self, projPath, workers:Worker):
+    workQueue = WorkQueue
+    def __init__(self, projPath, workQueue:WorkQueue):
         self.projPath = projPath
-        self.workers = workers
+        self.workQueue = workQueue
         self.existing = []
         self.tmpFiles = []
         self.logger = logging.getLogger('TATAS.Run')

@@ -9,7 +9,7 @@ class UB_EnterFirstLevelStep(TasGenerationStep):
         super().__init__("Ultraman Ball - Enter First Level Step", "efl")
 
     def find_next_start_press(self, genRun, start_state):
-        worker = genRun.workers[0]
+        worker = genRun.workQueue
         first_start = -1
         no_input = INPUT.asBytes(INPUT.No_Input)
         start_press = INPUT.asBytes(INPUT.Start_Key)

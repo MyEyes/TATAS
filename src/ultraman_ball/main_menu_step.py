@@ -9,7 +9,7 @@ class UB_MainMenuStep(TasGenerationStep):
         super().__init__("Ultraman Ball - Main Menu", "mm")
 
     def find_menu_start(self, genRun):
-        worker = genRun.workers[0]
+        worker = genRun.workQueue
 
         wi = WorkItem("")
         wi.output_savestate = genRun.getRunFilePath("initial_state")
@@ -29,7 +29,7 @@ class UB_MainMenuStep(TasGenerationStep):
         return menu_starts
 
     def create_menu_start_state(self, genRun, menu_starts):
-        worker = genRun.workers[0]
+        worker = genRun.workQueue
         wi = WorkItem("")
         wi.output_file = genRun.getStepFilePath(self, "menugen")
         wi.inputs = b"\0"*(menu_starts-1)
@@ -42,7 +42,7 @@ class UB_MainMenuStep(TasGenerationStep):
         return wi.output_savestate, wi.inputs
 
     def find_first_start_press(self, genRun, start_state):
-        worker = genRun.workers[0]
+        worker = genRun.workQueue
         first_start = -1
         no_input = INPUT.asBytes(INPUT.No_Input)
         start_press = INPUT.asBytes(INPUT.Start_Key)

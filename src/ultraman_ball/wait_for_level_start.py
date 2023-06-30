@@ -10,7 +10,7 @@ class UB_WaitForLevelStartStep(TasGenerationStep):
         super().__init__("Ultraman Ball - WaitForLevelStart "+suffix, "wls_"+suffix)
 
     def find_first_level_frame(self, genRun, start_state):
-        worker = genRun.workers[0]
+        worker = genRun.workQueue
         no_input = INPUT.asBytes(INPUT.No_Input)
 
         wi = WorkItem(start_state)

@@ -3,6 +3,7 @@ from src.tas_generator import TasGenerator
 from src.tas import TasInfo, Tas
 from src.ultraman_ball import ultraman_generation_steps
 from src.export.bk2exporter import BK2Exporter
+from src.workQueue import WorkQueue
 import sys
 import time
 from src.tas_logger import global_logger
@@ -22,9 +23,15 @@ if __name__ == "__main__":
         print("Usage: tatas.py rom")
         exit(-1)
     global_logger.info("Started with ROM " + sys.argv[1])
-    worker = GambatteWorker(sys.argv[1], silent=True)
+    
+    workers = []
+    for i in range(5):
+        worker = GambatteWorker(sys.argv[1], silent=True)
+        workers.append(worker)
+    workQueue = WorkQueue(workers)
+
     try:
-        generator = TasGenerator([worker], ultraman_generation_steps)
+        generator = TasGenerator(workQueue, ultraman_generation_steps)
         tas = generator.generate("/tmp/ultraman/")
         if not tas:
             exit(-1)
@@ -35,4 +42,4 @@ if __name__ == "__main__":
         exporter = BK2Exporter()
         exporter.export("movie.bk2", tas)
     finally:
-        worker.terminate()
+        workQueue.terminate()

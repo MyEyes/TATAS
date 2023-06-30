@@ -5,7 +5,7 @@ class Worker:
     def __init__(self):
         pass
 
-    def create_workfile(self, workitem):
+    def create_workfile(self, workitem, path):
         pass
 
     def submit_workfile(self, workfile):

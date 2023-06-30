@@ -8,9 +8,18 @@ class Workfile:
         self.workitem = workitem
         self.path = path
         self.written = False
+        self.result = None
 
     def writeOut(self):
         pass
 
     def outputToResult(self) -> WorkItemResult:
         pass
+
+    def waitForCompletion(self):
+        while not self.result:
+            pass
+        return
+
+    def isCompleted(self):
+        return self.result != None

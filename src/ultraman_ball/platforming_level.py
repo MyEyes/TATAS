@@ -4,19 +4,22 @@ from ..tas_section import TasSection
 from .ultraman_consts import ULTRAMAN_CONSTS, INPUT
 from ..workitem import WorkItem
 from .platforming.waypoint_scorer import WaypointScorer
+from .platforming.evo.generation import Generation
 import random
 import math
 
 class Attempt:
     def __init__(self):
         self.inputs = []
+        self.workfile = None
         pass
 
 class UB_PlatformingLevelStep(TasGenerationStep):
     def __init__(self, level="", waypoints=[]):
         self.level = level
         self.waypoints = waypoints
-        self.scorer = WaypointScorer(waypoints)
+        self.scorer = WaypointScorer(waypoints, frameCost=2)
+        self.openAttempts = []
         super().__init__("Ultraman Ball - Platforming Level "+level, level)
 
     def scoreAttempt(self, genRun, result):
@@ -28,18 +31,26 @@ class UB_PlatformingLevelStep(TasGenerationStep):
         
         return self.scorer.score(positions)
 
-    def performAttempt(self, genRun, start_state, attempt):
-        worker = genRun.workers[0]
+    def submitAttempt(self, genRun, start_state, attempt):
+        worker = genRun.workQueue
         no_input = INPUT.asBytes(INPUT.No_Input)
 
         wi = WorkItem(start_state)
-        wi.output_file = genRun.getStepRndPath(self)
+        wi.output_file = genRun.getStepRndPath(self, tmp=True)
         wi.inputs = attempt.inputs
         wi.outdata = [ULTRAMAN_CONSTS.ADDR_POSX,ULTRAMAN_CONSTS.ADDR_POSX2,ULTRAMAN_CONSTS.ADDR_POSY,ULTRAMAN_CONSTS.ADDR_POSY2]
-        wf = worker.create_workfile(wi, genRun.getStepRndPath(self))
-        result = worker.process_workfile_sync(wf)
+        wf = worker.create_workfile(wi, genRun.getStepRndPath(self, tmp=True))
+        attempt.workfile = wf
+        worker.submitWork(wf)
+        self.openAttempts.append(attempt)
 
-        return self.scoreAttempt(genRun, result)
+    def retrieveAttempt(self, genRun):
+        for attempt in self.openAttempts:
+            if attempt.workfile.isCompleted():
+                self.openAttempts.remove(attempt)
+                return self.scoreAttempt(genRun, attempt.workfile.result)
+
+        return None, None
 
     def genRandomAttempt(self, length):
         mask = ~INPUT.Select_Key #Never press select
@@ -61,7 +72,7 @@ class UB_PlatformingLevelStep(TasGenerationStep):
         return attempt
 
     def find_first_gameplay_frame(self, genRun, start_state):
-        worker = genRun.workers[0]
+        worker = genRun.workQueue
         no_input = INPUT.asBytes(INPUT.No_Input)
 
         wi = WorkItem(start_state)
@@ -87,30 +98,51 @@ class UB_PlatformingLevelStep(TasGenerationStep):
         return wi.output_savestate, wi.inputs
 
     def generate(self, genRun:TasGenerationRun, prevStep, prevSection):
-        worker = genRun.workers[0]
+        worker = genRun.workQueue
         start_state = prevSection.end_state
         level_state, inputs = self.find_first_gameplay_frame(genRun, start_state)
 
-        bestAttempt = None
-        bestScore = 0
-        endFrame = 0
-        i = 0
-        while bestScore < 55000:
-            attempt = self.genRandomAttempt(400)
-            score, frame = self.performAttempt(genRun, level_state, attempt)
-            #self.logger.info(f"Finished attempt {i}. Score: {score}")
-            if score > bestScore:
-                self.logger.info(f"Finished attempt {i}. New Best Score: {score}")
-                bestAttempt = attempt
-                bestScore = score
-                endFrame = frame
-            i+=1
-        #self.logger.info(f"Best attempt score: {bestScore}, endFrame: {endFrame}")
+        currG = Generation.generateRandom(level_state, 600)
+        currG.attemptsPerOrganism = 10
+        generations = [currG]
+        topScore = 0
+        do_generations = 50
+
+        for i in range(do_generations):
+            currG.run(genRun,self,genRun.workQueue)
+            currG.scoreOrganisms(self.scorer)
+            topScore = currG.sortedOrganismScores[0][1]
+            self.logger.info(f"Generation {i} done. Top Score: {topScore}")
+            if i<do_generations-1:
+                currG = currG.createOffspring(keepTop=50,newRandom=100,breed=500,mutate=600)
+                generations.append(currG)
+                genRun.clearTmpFiles()
+
+        bestAttempt = currG.getBestAttempt(self.scorer)
+
+        # bestAttempt = None
+        # bestScore = 0
+        # endFrame = 0
+        # i = 0
+        # while bestScore < 55000 and i < 20000:
+        #     if len(self.openAttempts)<8:
+        #         attempt = self.genRandomAttempt(400)
+        #         self.submitAttempt(genRun, level_state, attempt)
+        #     score, frame = self.retrieveAttempt(genRun)
+        #     if score is not None:
+        #         #self.logger.info(f"Finished attempt {i}. Score: {score}")
+        #         if score > bestScore:
+        #             self.logger.info(f"Finished attempt {i}. New Best Score: {score}")
+        #             bestAttempt = attempt
+        #             bestScore = score
+        #             endFrame = frame
+        #         i+=1
+        # #self.logger.info(f"Best attempt score: {bestScore}, endFrame: {endFrame}")
 
         wi = WorkItem(start_state)
         wi.output_file = genRun.getStepRndPath(self)
         wi.output_savestate = genRun.getStepFilePath(self, f"end")
-        wi.inputs = inputs + bestAttempt.inputs[:endFrame]
+        wi.inputs = inputs + bestAttempt.inputs
         wi.outdata = []
         wf = worker.create_workfile(wi, genRun.getStepRndPath(self))
         result = worker.process_workfile_sync(wf)

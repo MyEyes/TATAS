@@ -9,7 +9,7 @@ class UB_SkipLevelPreviewStep(TasGenerationStep):
         super().__init__("Ultraman Ball - Skip Level Preview "+suffix, "slp"+suffix)
 
     def find_a_b_press(self, genRun, start_state):
-        worker = genRun.workers[0]
+        worker = genRun.workQueue
         first_a = -1
         first_b = -1
         no_input = INPUT.asBytes(INPUT.No_Input)

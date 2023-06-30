@@ -1,14 +1,12 @@
 import struct
 from ..workfile import Workfile
 from ..workitem_result import WorkItemResult
-class GambatteWorkfile:
+class GambatteWorkfile(Workfile):
     #define WORKITEM_SAVESTATE_FILE_MAX_LEN 128
     #define WORKITEM_OUTPUT_FILE_MAX_LEN 256
     #define WORKITEM_INPUT_FILE_MAX_LEN 256
     def __init__(self, workitem, path):
-        self.workitem = workitem
-        self.path = path
-        self.written = False
+        super().__init__(workitem, path)
 
     def writeOut(self):
         self.written = True
@@ -34,5 +32,6 @@ class GambatteWorkfile:
             #print(data)
         for i in range(len(data)):
             result.data[self.workitem.outdata[i%bytes_per_frame]].append(data[i])
+        self.result = result
         #print(result.data)
         return result
