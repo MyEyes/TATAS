@@ -2,6 +2,9 @@ import struct
 from ..workfile import Workfile
 from ..workitem_result import WorkItemResult
 class GambatteWorkfile(Workfile):
+    WORKITEM_MAGIC = 0x4B524F57
+    WORKITEM_VERSION = 0x00000100
+
     #define WORKITEM_SAVESTATE_FILE_MAX_LEN 128
     #define WORKITEM_OUTPUT_FILE_MAX_LEN 256
     #define WORKITEM_INPUT_FILE_MAX_LEN 256
@@ -11,9 +14,16 @@ class GambatteWorkfile(Workfile):
     def writeOut(self):
         self.written = True
         with open(self.path,"wb") as f:
-            f.write(self.workitem.start_state.encode().ljust(128, b"\0"))
-            f.write(self.workitem.output_savestate.encode().ljust(128, b"\0"))
-            f.write(self.workitem.output_file.encode().ljust(256, b"\0"))
+            f.write(struct.pack("@I", self.WORKITEM_MAGIC))
+            f.write(struct.pack("@I", self.WORKITEM_VERSION))
+            f.write(struct.pack("@N", len(self.workitem.start_state)))
+            f.write(self.workitem.start_state.encode())
+            f.write(struct.pack("@N", len(self.workitem.output_savestate)))
+            f.write(self.workitem.output_savestate.encode())
+            f.write(struct.pack("@N", len(self.workitem.output_movie)))
+            f.write(self.workitem.output_movie.encode())
+            f.write(struct.pack("@N", len(self.workitem.output_file)))
+            f.write(self.workitem.output_file.encode())
             f.write(struct.pack("@N", len(self.workitem.inputs)))
             f.write(bytes(self.workitem.inputs))
             f.write(struct.pack("@N", len(self.workitem.outdata)))

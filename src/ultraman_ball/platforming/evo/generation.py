@@ -10,6 +10,7 @@ class Generation:
         self.attemptsPerOrganism = attemptsPerOrganism
         self.numFramesPerAttempt = numFramesPerAttempt
         self.start_state = start_state
+        self.bestAttempt = None
         self.attempts = []
         self.organismScores = {}
         self.sortedOrganismScores = []
@@ -51,19 +52,15 @@ class Generation:
         for a in self.attempts:
             o = a.organism
             score, frame = scorer.scoreResult(a.workfile.result)
+            a.score = score
             if score > self.organismScores[o]:
                 self.organismScores[o] = score
+            if self.bestAttempt is None or score > self.bestAttempt.score:
+                self.bestAttempt = a
         self.sortedOrganismScores = sorted(self.organismScores.items(), key=lambda x:x[1], reverse=True)
 
-    def getBestAttempt(self, scorer):
-        bestScore = self.sortedOrganismScores[0][1]
-        bestOrganism = self.sortedOrganismScores[0][0]
-        for a in self.attempts:
-            if a.organism == bestOrganism:
-                score, frame = scorer.scoreResult(a.workfile.result)
-                if score == bestScore:
-                    return a
-        return None
+    def getBestAttempt(self):
+        return self.bestAttempt
 
     def createOffspring(self, keepTop=50, newRandom=100, breed=250, mutate=600, organismClass=FrameOrganism):
         totalOrganisms = keepTop+newRandom+breed+mutate

@@ -89,7 +89,7 @@ class UB_PlatformingLevelStep(TasGenerationStep):
         
         self.logger.info(f"First gameplay frame in level is {end_frame}, tas_frame: {genRun.getAbsoluteFrameNumber(end_frame)}")
         wi = WorkItem(start_state)
-        wi.output_file = genRun.getStepRndPath(self)
+        wi.output_file = genRun.getStepRndPath(self, tmp=True)
         wi.output_savestate = genRun.getStepFilePath(self, f"start")
         wi.inputs = bytearray(no_input*end_frame)
         wi.outdata = []
@@ -97,28 +97,40 @@ class UB_PlatformingLevelStep(TasGenerationStep):
         result = worker.process_workfile_sync(wf)
         return wi.output_savestate, wi.inputs
 
+    def render_generation_best(self, genRun, currG, numGen):
+        worker = genRun.workQueue
+        attempt = currG.getBestAttempt()
+        wi = WorkItem(attempt.workfile.workitem.start_state)
+        wi.output_file = genRun.getStepRndPath(self, tmp=True)
+        wi.output_movie = genRun.getStepFilePath(self, f"gen_{numGen}.mp4")
+        wi.inputs = bytearray(attempt.inputs)
+        wi.outdata = []
+        wf = worker.create_workfile(wi, genRun.getStepFilePath(self, f"gen_{numGen}"))
+        result = worker.process_workfile_sync(wf)
+
     def generate(self, genRun:TasGenerationRun, prevStep, prevSection):
         worker = genRun.workQueue
         start_state = prevSection.end_state
         level_state, inputs = self.find_first_gameplay_frame(genRun, start_state)
 
-        currG = Generation.generateRandom(level_state, 600)
-        currG.attemptsPerOrganism = 10
+        currG = Generation.generateRandom(level_state, 300)
+        currG.attemptsPerOrganism = 5
         generations = [currG]
         topScore = 0
-        do_generations = 50
+        do_generations = 3
 
         for i in range(do_generations):
             currG.run(genRun,self,genRun.workQueue)
             currG.scoreOrganisms(self.scorer)
             topScore = currG.sortedOrganismScores[0][1]
             self.logger.info(f"Generation {i} done. Top Score: {topScore}")
+            self.render_generation_best(genRun, currG, i)
             if i<do_generations-1:
-                currG = currG.createOffspring(keepTop=50,newRandom=100,breed=500,mutate=600)
+                currG = currG.createOffspring(keepTop=25,newRandom=50,breed=250,mutate=300)
                 generations.append(currG)
                 genRun.clearTmpFiles()
 
-        bestAttempt = currG.getBestAttempt(self.scorer)
+        bestAttempt = currG.getBestAttempt()
 
         # bestAttempt = None
         # bestScore = 0

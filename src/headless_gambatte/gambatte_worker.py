@@ -6,7 +6,7 @@ class GambatteWorker(Worker):
     def __init__(self, rom, gambatte="../gambatte_runner/gambatte_runner", silent=True):
         gambatte_dir = os.path.dirname(gambatte)
         if silent:
-            self.proc = subprocess.Popen([gambatte, rom], stdout=subprocess.DEVNULL, env={'LD_LIBRARY_PATH': gambatte_dir})
+            self.proc = subprocess.Popen([gambatte, rom], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, env={'LD_LIBRARY_PATH': gambatte_dir})
         else:
             self.proc = subprocess.Popen([gambatte, rom], env={'LD_LIBRARY_PATH': gambatte_dir})
         

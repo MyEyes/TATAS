@@ -13,14 +13,16 @@ class TasGenerator:
         lastStep = None
         lastSection = None
         for s in self.steps:
-            s.logStart()
-            newSection = s.generate(run, lastStep, lastSection)
-            if newSection is None:
+            try:
+                s.logStart()
+                newSection = s.generate(run, lastStep, lastSection)
+                if newSection is None:
+                    s.logEnd()
+                    self.logger.critical(f"Generation of section failed, aborting")
+                    return None
                 s.logEnd()
-                self.logger.critical(f"Generation of section failed, aborting")
-                return None
-            s.logEnd()
-            run.clearTmpFiles()
+            finally:
+                run.clearTmpFiles()
             self.logger.info(f"Generated section: {newSection}")
             run.addSection(newSection)
             lastStep = s
