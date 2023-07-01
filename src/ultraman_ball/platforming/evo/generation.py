@@ -67,7 +67,25 @@ class Generation:
         self.logger.debug(f"Creating next Generation with {totalOrganisms} organisms. Keeping top {keepTop}")
         self.logger.debug(f"Keeping {keepTop} best. Mutating {mutate}. Breeding {breed}. Random {newRandom}")
         organisms = []
-        top_organisms = [t[0] for t in self.sortedOrganismScores[:keepTop]]
+
+        #Keep top organisms for every organism class
+        top_organisms_by_class = {}
+        for oc in organismClasses:
+            top_organisms_by_class[oc] = []
+        for t in self.sortedOrganismScores:
+            c = t[0].__class__
+            if len(top_organisms_by_class[c])<keepTop:
+                top_organisms_by_class[c].append(t[0])
+            done = True
+            for oc in organismClasses:
+                if(len(top_organisms_by_class[oc])<keepTop):
+                    done = False
+            if done:
+                break
+        top_organisms = []
+        for oc in organismClasses:
+            top_organisms.extend(top_organisms_by_class[oc])
+        
         organisms.extend(top_organisms)
         for _ in range(newRandom):
             organismClass = random.choice(organismClasses)
