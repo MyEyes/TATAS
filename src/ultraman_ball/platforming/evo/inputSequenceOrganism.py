@@ -7,6 +7,9 @@ class InputSequenceOrganism(Organism):
     def __init__(self, inputs):
         self.inputs = inputs
 
+    def generateAttempts(self, numFrames, maxNumAttempts):
+        return [self.generateAttempt(numFrames)]
+
     def generateAttempt(self, numFrames):
         inputs = bytearray(numFrames)
         inputIndex = 0

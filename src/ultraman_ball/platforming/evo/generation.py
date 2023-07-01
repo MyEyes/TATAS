@@ -20,8 +20,7 @@ class Generation:
     def generateAttempts(self):
         self.logger.debug("Generating attempts")
         for o in self.organisms:
-            for _ in range(self.attemptsPerOrganism):
-                self.attempts.append(o.generateAttempt(self.numFramesPerAttempt))
+            self.attempts.extend(o.generateAttempts(self.numFramesPerAttempt, self.attemptsPerOrganism))
         self.logger.debug(f"Generated {len(self.attempts)} attempts")
 
     def run(self, genRun, step, workQueue):

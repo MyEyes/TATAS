@@ -11,6 +11,9 @@ class FrameOrganism(Organism):
     def __init__(self, frameGeneTuples):
         self.frameGeneTuples = frameGeneTuples
 
+    def generateAttempts(self, numFrames, maxNumAttempts):
+        return [self.generateAttempt(numFrames) for _ in range(maxNumAttempts)]
+
     def generateAttempt(self, numFrames):
         inputs = bytearray(numFrames)
         tupleIndex = 0
