@@ -3,6 +3,7 @@ import random
 import string
 from .workQueue import WorkQueue
 import logging
+from .export.ffmpeg_playlist import FFMpegPlaylist
 
 class TasGenerationRun:
     workQueue = WorkQueue
@@ -14,6 +15,7 @@ class TasGenerationRun:
         self.logger = logging.getLogger('TATAS.Run')
         self.totalFrames = 0
         self.sections = []
+        self.playlist = FFMpegPlaylist(self.getRunFilePath('playlist.txt'), self.getRunFilePath('playlist_build.txt'))
 
     def getRndName(self, length=8):
         return ''.join(random.choices(string.ascii_letters,k=length))
@@ -61,3 +63,7 @@ class TasGenerationRun:
     def addSection(self, section):
         self.sections.append(section)
         self.totalFrames += len(section.inputs)
+
+    def addVideo(self, video):
+        self.playlist.addVideo(video)
+        self.playlist.commit()

@@ -5,6 +5,7 @@ from .ultraman_consts import ULTRAMAN_CONSTS, INPUT
 from ..workitem import WorkItem
 from .platforming.waypoint_scorer import WaypointScorer
 from .platforming.evo.generation import Generation
+from ..export.ffmpeg_helper import FFMpegHelper
 import random
 import math
 
@@ -108,6 +109,11 @@ class UB_PlatformingLevelStep(TasGenerationStep):
         wf = worker.create_workfile(wi, genRun.getStepFilePath(self, f"gen_{numGen}"))
         result = worker.process_workfile_sync(wf)
 
+        score = attempt.score
+        textVid = genRun.getStepFilePath(self, f"gen_{numGen}_t.mp4")
+        FFMpegHelper.AddBottomText(f"Gen {numGen} - {int(score)}", wi.output_movie, textVid)
+        genRun.addVideo(textVid)
+
     def generate(self, genRun:TasGenerationRun, prevStep, prevSection):
         worker = genRun.workQueue
         start_state = prevSection.end_state
@@ -118,6 +124,10 @@ class UB_PlatformingLevelStep(TasGenerationStep):
         generations = [currG]
         topScore = 0
         do_generations = 3
+
+        titleCard = genRun.getStepFilePath(self, "title.mp4")
+        FFMpegHelper.TextToVideo(f"Level {self.level}", titleCard)
+        genRun.addVideo(titleCard)
 
         for i in range(do_generations):
             currG.run(genRun,self,genRun.workQueue)
