@@ -8,6 +8,10 @@ class FFMpegHelper:
 
     @classmethod
     def TextToVideo(cls, text, outVid, duration=3, font="monospace", fontsize=30):
-        cmd = f"ffmpeg -y -f lavfi -i color=size=166x140:duration={duration}:rate=25:color=black -vf \"drawtext=font={font}:fontsize={fontsize}:fontcolor=white:x=(w-text_w)/2:y=(h-text_h)/2:text='{text}'\" {outVid} 2>/dev/null"
+        cmd = f"ffmpeg -y -f lavfi -i color=size=342x280:duration={duration}:rate=25:color=black -vf \"drawtext=font={font}:fontsize={fontsize}:fontcolor=white:x=(w-text_w)/2:y=(h-text_h)/2:text='{text}'\" {outVid} 2>/dev/null"
         os.system(cmd)
 
+    @classmethod
+    def TextCardToVideo(cls, title, textFile, outVid, duration=6, font="monospace", fontsize_title=24, fontsize=8):
+        cmd = f"ffmpeg -y -f lavfi -i color=size=342x280:duration={duration}:rate=25:color=black -vf \"drawtext=font={font}:fontsize={fontsize_title}:fontcolor=white:x=(w-text_w)/2:y=20:text='{title}', drawtext=font={font}:fontsize={fontsize}:fontcolor=white:x=20:y=45:textfile='{textFile}'\" {outVid} 2>/dev/null"
+        os.system(cmd)

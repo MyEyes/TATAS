@@ -28,6 +28,8 @@ class FrameOrganism(Organism):
 
     # Go through and assign every potential frame to either genes from self or partner
     def breed(self, partner, changeChance = 0.05):
+        if not isinstance(partner, FrameOrganism):
+            return partner.breed(self, changeChance)
         newTuples = []
 
         selfIndex = 0

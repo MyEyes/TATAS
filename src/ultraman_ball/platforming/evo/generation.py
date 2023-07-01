@@ -1,6 +1,7 @@
 import logging
 from ..decodeHelper import DecodeHelper
 from .frameOrganism import FrameOrganism
+from .inputSequenceOrganism import InputSequenceOrganism
 from ....workitem import WorkItem
 from ...ultraman_consts import ULTRAMAN_CONSTS
 import random
@@ -62,7 +63,7 @@ class Generation:
     def getBestAttempt(self):
         return self.bestAttempt
 
-    def createOffspring(self, keepTop=50, newRandom=100, breed=250, mutate=600, organismClass=FrameOrganism):
+    def createOffspring(self, keepTop=50, newRandom=100, breed=250, mutate=600, organismClasses=[FrameOrganism, InputSequenceOrganism]):
         totalOrganisms = keepTop+newRandom+breed+mutate
         self.logger.debug(f"Creating next Generation with {totalOrganisms} organisms. Keeping top {keepTop}")
         self.logger.debug(f"Keeping {keepTop} best. Mutating {mutate}. Breeding {breed}. Random {newRandom}")
@@ -70,6 +71,7 @@ class Generation:
         top_organisms = [t[0] for t in self.sortedOrganismScores[:keepTop]]
         organisms.extend(top_organisms)
         for _ in range(newRandom):
+            organismClass = random.choice(organismClasses)
             organisms.append(organismClass.generateRandom())
         for _ in range(mutate):
             baseO = random.choice(top_organisms)
@@ -77,14 +79,41 @@ class Generation:
         for _ in range(breed):
             baseA = random.choice(top_organisms)
             baseB = random.choice(top_organisms)
-            while baseA == baseB:
-                baseB = random.choice(top_organisms)
-            organisms.append(baseA.breed(baseB))
+            # We might want to retry, the idea with that is that we can let the breed function
+            # of each organism class decide if they can crossbreed with another species
+            retryCount = 5
+            newOrg = None
+            while retryCount > 0: 
+                while baseA == baseB:
+                    baseB = random.choice(top_organisms)
+                newOrg = baseA.breed(baseB)
+                if newOrg:
+                    break
+            if newOrg:
+                organisms.append(newOrg)
         return Generation(self.start_state, organisms, self.attemptsPerOrganism, self.numFramesPerAttempt)
 
+    def getStats(self):
+        stats = ""
+        stats += f"NumOrganisms = {len(self.organisms)}\n"
+        stats += f"NumAttempts = {len(self.attempts)}\n"
+        stats += f"Organism Counts:\n"
+        organismKindCounters = {}
+        for o in self.organisms:
+            if o.__class__ not in organismKindCounters:
+                organismKindCounters[o.__class__] = 0
+            organismKindCounters[o.__class__] += 1
+        for (k,v) in organismKindCounters.items():
+            stats +=f"\t\t{k.__name__}: {v}\n"
+        stats += "Top Scores\n"
+        for i in range(10):
+            stats += f"{i}\t{int(self.sortedOrganismScores[i][1])}\n"
+        return stats
+
     @classmethod
-    def generateRandom(cls, start_state, totalOrganisms, organismClass=FrameOrganism):
+    def generateRandom(cls, start_state, totalOrganisms, organismClasses=[FrameOrganism, InputSequenceOrganism]):
         organisms = []
         for _ in range(totalOrganisms):
+            organismClass = random.choice(organismClasses)
             organisms.append(organismClass.generateRandom())
         return Generation(start_state, organisms)

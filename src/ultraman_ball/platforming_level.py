@@ -98,6 +98,16 @@ class UB_PlatformingLevelStep(TasGenerationStep):
         result = worker.process_workfile_sync(wf)
         return wi.output_savestate, wi.inputs
 
+    def render_generation_stats(self, genRun, currG, numGen):
+        textVid = genRun.getStepFilePath(self, f"gen_{numGen}_stats.mp4")
+        title = f"Gen {numGen}"
+        text = currG.getStats()
+        textFile = genRun.getStepFilePath(self, f"gen_{numGen}_stats.txt")
+        with open(textFile, "w") as f:
+            f.write(text)
+        FFMpegHelper.TextCardToVideo(title, textFile, textVid)
+        genRun.addVideo(textVid)
+
     def render_generation_best(self, genRun, currG, numGen):
         worker = genRun.workQueue
         attempt = currG.getBestAttempt()
@@ -134,6 +144,7 @@ class UB_PlatformingLevelStep(TasGenerationStep):
             currG.scoreOrganisms(self.scorer)
             topScore = currG.sortedOrganismScores[0][1]
             self.logger.info(f"Generation {i} done. Top Score: {topScore}")
+            self.render_generation_stats(genRun, currG, i)
             self.render_generation_best(genRun, currG, i)
             if i<do_generations-1:
                 currG = currG.createOffspring(keepTop=25,newRandom=50,breed=250,mutate=300)
