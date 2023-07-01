@@ -84,7 +84,7 @@ class Generation:
             newOrg = None
             while retryCount > 0: 
                 while baseA == baseB:
-                    baseB = random.choice(top_organisms)
+                    baseB = random.choice(self.organisms)
                 newOrg = baseA.breed(baseB)
                 if newOrg:
                     break
