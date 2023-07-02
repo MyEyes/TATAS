@@ -31,8 +31,8 @@ class InputSequenceOrganism(Organism):
             partnerInputs = partner.generateAttempt(len(self.inputs)).inputs
         newInputLen = max(len(self.inputs),len(partnerInputs))
         newInputs = bytearray(newInputLen)
-        selfIndex = random.randint(0, len(self.inputs)-1)
-        partnerIndex = random.randint(0, len(partnerInputs)-1)
+        selfIndex = 0
+        partnerIndex = 0
         dominant = random.getrandbits(1) == 1
         if dominant:
             currIndex = selfIndex
