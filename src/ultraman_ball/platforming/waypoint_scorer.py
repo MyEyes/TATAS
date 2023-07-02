@@ -1,5 +1,6 @@
 import math
 from .decodeHelper import DecodeHelper
+from ..ultraman_consts import ULTRAMAN_CONSTS
 class WaypointScorer:
     def __init__(self, waypoints, frameCost=2):
         self.waypoints = waypoints
@@ -7,7 +8,12 @@ class WaypointScorer:
 
     def scoreResult(self, result):
         positions = DecodeHelper.positionsFromResult(result)
-        return self.score(positions)
+        factor = 1
+        for d in result.data[ULTRAMAN_CONSTS.ADDR_GAME_STATE]:
+            if d == 9: #State of beating level
+                factor = 2
+        score, frame = self.score(positions)
+        return score*factor, frame
 
     def score(self, positions):
         baseScore = 0x10000

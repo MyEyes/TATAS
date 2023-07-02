@@ -31,7 +31,7 @@ class Generation:
             wi = WorkItem(self.start_state)
             wi.output_file = genRun.getStepRndPath(step, tmp=True)
             wi.inputs = a.inputs
-            wi.outdata = [ULTRAMAN_CONSTS.ADDR_POSX,ULTRAMAN_CONSTS.ADDR_POSX2,ULTRAMAN_CONSTS.ADDR_POSY,ULTRAMAN_CONSTS.ADDR_POSY2]
+            wi.outdata = [ULTRAMAN_CONSTS.ADDR_POSX,ULTRAMAN_CONSTS.ADDR_POSX2,ULTRAMAN_CONSTS.ADDR_POSY,ULTRAMAN_CONSTS.ADDR_POSY2, ULTRAMAN_CONSTS.ADDR_GAME_STATE]
             wf = workQueue.create_workfile(wi, genRun.getStepRndPath(step, tmp=True))
             a.workfile = wf
             workQueue.submitWork(wf)
