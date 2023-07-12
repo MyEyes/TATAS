@@ -27,25 +27,6 @@ class UB_PlatformingLevelStep(TasGenerationStep):
         self.openAttempts = []
         super().__init__("Ultraman Ball - Platforming Level "+level, level)
 
-    def genRandomAttempt(self, length):
-        mask = ~INPUT.Select_Key #Never press select
-        unpause = 0
-        attempt = Attempt()
-        attempt.inputs = bytearray(length)
-        for i in range(length):
-            if unpause == 0:
-                attempt.inputs[i] = random.getrandbits(8) & mask
-                if attempt.inputs[i] & INPUT.Start_Key:
-                    unpause = 2
-            elif unpause == 2: #Frame we let go of start so we can repress
-                unpause -= 1
-                attempt.inputs[i] = 0
-            elif unpause == 1:
-                attempt.inputs[i] = random.getrandbits(8) & mask
-                attempt.inputs[i] |= INPUT.Start_Key #Make sure we unpause
-                unpause -= 1
-        return attempt
-
     def find_first_gameplay_frame(self, genRun, start_state):
         worker = genRun.workQueue
         no_input = INPUT.asBytes(INPUT.No_Input)
@@ -127,10 +108,12 @@ class UB_PlatformingLevelStep(TasGenerationStep):
 
         bestAttempt = currG.getBestAttempt()
 
+        score, frame = self.scorer.scoreResult(bestAttempt.workfile.result)
+
         wi = WorkItem(start_state)
         wi.output_file = genRun.getStepRndPath(self)
         wi.output_savestate = genRun.getStepFilePath(self, f"end")
-        wi.inputs = inputs + bestAttempt.inputs
+        wi.inputs = inputs + bestAttempt.inputs[:frame]
         wi.outdata = []
         wf = worker.create_workfile(wi, genRun.getStepRndPath(self))
         result = worker.process_workfile_sync(wf)

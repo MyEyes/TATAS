@@ -5,6 +5,7 @@ from .inputSequenceOrganism import InputSequenceOrganism
 from ....workitem import WorkItem
 from ...ultraman_consts import ULTRAMAN_CONSTS
 import random
+import time
 class Generation:
     def __init__(self, start_state, organisms, attemptsPerOrganism=10, numFramesPerAttempt=400):
         self.organisms = organisms
@@ -38,10 +39,12 @@ class Generation:
         # Wait until all attempts are done
         done = False
         while not done:
+            time.sleep(1)
             done = True
             for a in self.attempts:
                 if not a.workfile.isCompleted():
                     done = False
+                    continue
         self.logger.debug("Work done")
 
     def scoreOrganisms(self, scorer):
