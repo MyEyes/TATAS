@@ -10,5 +10,6 @@ ultraman_generation_steps = [
     UB_EnterFirstLevelStep(),
     UB_SkipLevelPreviewStep("1-1"),
     UB_WaitForLevelStartStep("1-1"),
-    UB_PlatformingLevelStep("1-1", ULTRAMAN_CONSTS().LEVEL_WAYPOINTS['1-1'])
+    #UB_PlatformingLevelStep("1-1", ULTRAMAN_CONSTS().LEVEL_WAYPOINTS['1-1']),
+    UB_PlatformingLevelStep("1-1", [])
 ]

@@ -4,6 +4,7 @@ from ..tas_section import TasSection
 from .ultraman_consts import ULTRAMAN_CONSTS, INPUT
 from ..workitem import WorkItem
 from .platforming.waypoint_scorer import WaypointScorer
+from .platforming.exploration_scorer import ExplorationScorer
 from .platforming.evo.generation import Generation
 from ..export.ffmpeg_helper import FFMpegHelper
 import random
@@ -19,39 +20,12 @@ class UB_PlatformingLevelStep(TasGenerationStep):
     def __init__(self, level="", waypoints=[]):
         self.level = level
         self.waypoints = waypoints
-        self.scorer = WaypointScorer(waypoints, frameCost=2)
+        if len(waypoints)>0:
+            self.scorer = WaypointScorer(waypoints, frameCost=2)
+        else:
+            self.scorer = ExplorationScorer()
         self.openAttempts = []
         super().__init__("Ultraman Ball - Platforming Level "+level, level)
-
-    def scoreAttempt(self, genRun, result):
-        positions = []
-        for i in range(len(result.data[ULTRAMAN_CONSTS.ADDR_POSX])):
-            x = result.data[ULTRAMAN_CONSTS.ADDR_POSX][i] + (result.data[ULTRAMAN_CONSTS.ADDR_POSX2][i]<<8)
-            y = result.data[ULTRAMAN_CONSTS.ADDR_POSY][i] + (result.data[ULTRAMAN_CONSTS.ADDR_POSY2][i]<<8)
-            positions.append((x,y))
-        
-        return self.scorer.score(positions)
-
-    def submitAttempt(self, genRun, start_state, attempt):
-        worker = genRun.workQueue
-        no_input = INPUT.asBytes(INPUT.No_Input)
-
-        wi = WorkItem(start_state)
-        wi.output_file = genRun.getStepRndPath(self, tmp=True)
-        wi.inputs = attempt.inputs
-        wi.outdata = [ULTRAMAN_CONSTS.ADDR_POSX,ULTRAMAN_CONSTS.ADDR_POSX2,ULTRAMAN_CONSTS.ADDR_POSY,ULTRAMAN_CONSTS.ADDR_POSY2]
-        wf = worker.create_workfile(wi, genRun.getStepRndPath(self, tmp=True))
-        attempt.workfile = wf
-        worker.submitWork(wf)
-        self.openAttempts.append(attempt)
-
-    def retrieveAttempt(self, genRun):
-        for attempt in self.openAttempts:
-            if attempt.workfile.isCompleted():
-                self.openAttempts.remove(attempt)
-                return self.scoreAttempt(genRun, attempt.workfile.result)
-
-        return None, None
 
     def genRandomAttempt(self, length):
         mask = ~INPUT.Select_Key #Never press select
@@ -152,25 +126,6 @@ class UB_PlatformingLevelStep(TasGenerationStep):
                 genRun.clearTmpFiles()
 
         bestAttempt = currG.getBestAttempt()
-
-        # bestAttempt = None
-        # bestScore = 0
-        # endFrame = 0
-        # i = 0
-        # while bestScore < 55000 and i < 20000:
-        #     if len(self.openAttempts)<8:
-        #         attempt = self.genRandomAttempt(400)
-        #         self.submitAttempt(genRun, level_state, attempt)
-        #     score, frame = self.retrieveAttempt(genRun)
-        #     if score is not None:
-        #         #self.logger.info(f"Finished attempt {i}. Score: {score}")
-        #         if score > bestScore:
-        #             self.logger.info(f"Finished attempt {i}. New Best Score: {score}")
-        #             bestAttempt = attempt
-        #             bestScore = score
-        #             endFrame = frame
-        #         i+=1
-        # #self.logger.info(f"Best attempt score: {bestScore}, endFrame: {endFrame}")
 
         wi = WorkItem(start_state)
         wi.output_file = genRun.getStepRndPath(self)
